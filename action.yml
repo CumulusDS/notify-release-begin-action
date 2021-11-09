@@ -1,28 +1,60 @@
-name: 'action-template'
-description: 'description'
+name: 'notify-release-begin-action'
+description: 'notifies slack channels when we have begun a production release'
 inputs:
-  input:
-    description: 'description'
+
+  SLACK_WEBHOOK:
+    description: 'slack webhook for notification action'
+    required: true
+  CHANNEL1:
+    description: 'First channel to notify'
     required: false
-    default: ''
-outputs:
-  result:
-    description: "results"
-    value: "${{ steps.action.outputs.result }}"
+    default: 'devops-prod'
+  CHANNEL2:
+    description: 'Second channel to notify'
+    required: false
+    default: 'software'
 runs:
   using: "composite"
   steps:
-    - name: generic step1
-      id: action
-      run: |
-        echo "::group::Title"
-        echo "steps go here"
-        results=something
-        echo "::set-output name=results::$results"
-        echo "::endgroup::"
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Fetch all tags
+      run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       shell: bash
-    - name: Print results
-      id: print
+    - name: set env vars
       run: |
-        echo "${{ steps.action.outputs.result }}"
+        echo "ACTOR=$(echo $GITHUB_CONTEXT | jq -r '.actor')" >> $GITHUB_ENV
+        echo "REPO=$((echo ${{ github.repository }}) | sed 's/^..........//')" >> $GITHUB_ENV
+        echo "TAG=$(echo $GITHUB_CONTEXT | jq -r '.event.release.tag_name')" >> $GITHUB_ENV
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
       shell: bash
+    - name: Notify ${{ inputs.CHANNEL1 }}
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_CHANNEL: "${{ inputs.CHANNEL1 }}"
+        SLACK_USERNAME: "${{ env.REPO }} / ${{ env.ACTOR }}"
+        SLACK_ICON: "https://jaxenter.com/wp-content/uploads/2020/05/software-release.jpg"
+        SLACK_ICON_EMOJI: ":information_source:"
+        MSG_MINIMAL: true
+        SLACK_TITLE: "Beginning Production Release"
+        SLACK_MESSAGE: |
+          *<https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}|${{ env.TAG }}>*, released by ${{ env.ACTOR }}
+        SLACK_FOOTER: https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}
+        SLACK_WEBHOOK: ${{ inputs.SLACK_WEBHOOK }}
+    - name: Notify ${{ inputs.CHANNEL2 }}
+      id: notify-software
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_CHANNEL: "${{ inputs.CHANNEL2 }}"
+        SLACK_USERNAME: "${{ env.REPO }} / ${{ env.ACTOR }}"
+        SLACK_ICON: "https://jaxenter.com/wp-content/uploads/2020/05/software-release.jpg"
+        SLACK_ICON_EMOJI: ":information_source:"
+        MSG_MINIMAL: true
+        SLACK_TITLE: "Beginning Production Release"
+        SLACK_MESSAGE: |
+          *<https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}|${{ env.TAG }}>*, released by ${{ env.ACTOR }}
+        SLACK_FOOTER: https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}
+        SLACK_WEBHOOK: ${{ inputs.SLACK_WEBHOOK }}
