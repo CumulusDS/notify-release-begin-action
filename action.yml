@@ -44,7 +44,7 @@ runs:
         MSG_MINIMAL: true
         SLACK_TITLE: "Beginning Production Release"
         SLACK_MESSAGE: |
-          Release *<https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}|${{ env.TAG }}>*", released by ${{ env.ACTOR }}
+          Release *<https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}|${{ env.TAG }}>*, released by ${{ env.ACTOR }}
         SLACK_FOOTER: https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}
         SLACK_WEBHOOK: ${{ inputs.SLACK_WEBHOOK }}
     - name: Notify ${{ inputs.CHANNEL2 }}
@@ -58,6 +58,6 @@ runs:
         MSG_MINIMAL: true
         SLACK_TITLE: "Beginning Production Release"
         SLACK_MESSAGE: |
-          Release *<https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}|${{ env.TAG }}>*", released by ${{ env.ACTOR }}
+          Release *<https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}|${{ env.TAG }}>*, released by ${{ env.ACTOR }}
         SLACK_FOOTER: https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}
         SLACK_WEBHOOK: ${{ inputs.SLACK_WEBHOOK }}
