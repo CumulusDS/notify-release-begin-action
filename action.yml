@@ -12,7 +12,7 @@ inputs:
   CHANNEL2:
     description: 'Second channel to notify'
     required: false
-    default: 'software'
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -45,8 +45,9 @@ runs:
         SLACK_FOOTER: https://github.com/${{ github.repository }}/releases/tag/${{ env.TAG }}
         SLACK_WEBHOOK: ${{ inputs.SLACK_WEBHOOK }}
     - name: Notify ${{ inputs.CHANNEL2 }}
-      id: notify-software
+      id: notify-2
       uses: rtCamp/action-slack-notify@v2
+      if: inputs.CHANNEL2 != ''
       env:
         SLACK_CHANNEL: "${{ inputs.CHANNEL2 }}"
         SLACK_USERNAME: "${{ env.REPO }} / ${{ env.ACTOR }}"
